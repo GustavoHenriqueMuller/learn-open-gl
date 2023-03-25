@@ -1,0 +1,11 @@
+# Visual Studio cache files
+*.aps
+*.ncb
+*.opendb
+*.opensdf
+*.sdf
+*.cachefile
+
+# Binaries
+GameGL/bin
+GameGL/GameGL/GameGL.vcxproj
