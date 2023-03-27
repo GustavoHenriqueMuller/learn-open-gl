@@ -1,0 +1,4 @@
+﻿D:\Visual Studio\IDE\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(517,5): warning MSB8028: The intermediate directory (E:\repos\learn-open-gl\LearnOpenGL\bin\intermediates\x64\Debug\) contains files shared from another project (GameGL.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+  glad.c
+  main.cpp
+  LearnOpenGL.vcxproj -> E:\repos\learn-open-gl\LearnOpenGL\bin\x64\Debug\LearnOpenGL.exe
