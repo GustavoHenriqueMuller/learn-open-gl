@@ -2,8 +2,11 @@
 #include <fstream>
 #include <string>
 
-#include <GLAD/glad.h>
-#include <GLFW/glfw3.h>
+#include "GLAD/glad.h"
+#include "GLFW/glfw3.h"
+
+#include "Shader.h"
+#include "ShaderProgram.h"
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
@@ -12,49 +15,6 @@ void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
 void processInput(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
-}
-
-int checkErrorsShaderCompilation(int shader) {
-	int success;
-	char infoLog[512];
-	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-
-	if (!success) {
-		glGetShaderInfoLog(shader, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::COMPILATION_FAILED\n" << infoLog << std::endl;
-
-		return -1;
-	}
-
-	return 0;
-}
-
-int checkErrorsShaderProgramLinking(int shaderProgram) {
-	int success;
-	char infoLog[512];
-	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-
-	if (!success) {
-		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-
-		return -1;
-	}
-
-	return 0;
-}
-
-std::string getShaderFileContents(std::string shaderFileName) {
-	std::ifstream ifile(shaderFileName);
-	std::string filetext;
-
-	while (ifile.good()) {
-		std::string line;
-		std::getline(ifile, line);
-		filetext.append(line + "\n");
-	}
-
-	return filetext;
 }
 
 int main() {
@@ -101,56 +61,21 @@ int main() {
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &EBO);
 
-	// Vertex shader and fragment shader source.
-	std::string vertexShaderString = getShaderFileContents("src/shaders/vertexShader.glsl");
-	std::string fragmentShaderString = getShaderFileContents("src/shaders/fragmentShader.glsl");
+	// Vertex and fragment shaders.
+	Shader vertexShader("src/shaders/vertexShader.glsl", GL_VERTEX_SHADER);
+	Shader fragmentShader("src/shaders/fragmentShader.glsl", GL_FRAGMENT_SHADER);
 
-	const char* vertexShaderSource = vertexShaderString.c_str();
-	const char* fragmentShaderSource = fragmentShaderString.c_str();
-	
-	// VERTEX SHADER.
-	unsigned int vertexShader;
+	// Shader program.
+	ShaderProgram shaderProgram(vertexShader, fragmentShader);
 
-	vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-	glCompileShader(vertexShader);
-
-	if (checkErrorsShaderCompilation(vertexShader) != 0) {
-		return -2;
-	}
-
-	// FRAGMENT SHADER.
-	unsigned int fragmentShader;
-	
-	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-	glCompileShader(fragmentShader);
-
-	if (checkErrorsShaderCompilation(fragmentShader) != 0) {
-		return -2;
-	}
-
-	// SHADER PROGRAM.
-	unsigned int shaderProgram;
-	shaderProgram = glCreateProgram();
-
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram);
-	glUseProgram(shaderProgram);
-
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
-
-	if (checkErrorsShaderProgramLinking(shaderProgram) != 0) {
-		return -3;
-	}
+	vertexShader.dealocate();
+	fragmentShader.dealocate();
 
 	// VAO.
 	unsigned int VAO;
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
-
+		
 	// Bind VBO to current VAO.
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
@@ -174,7 +99,7 @@ int main() {
 		// Clearing.
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
-		glUseProgram(shaderProgram);
+		glUseProgram(shaderProgram.id);
 
 		// Drawing.
 		glBindVertexArray(VAO);
