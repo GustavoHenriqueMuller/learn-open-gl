@@ -13,6 +13,10 @@ public:
 	std::string shaderFilePath;
 	
 	Shader(const std::string& shaderFilePath, GLenum shaderType);
+
+	void setBool(const std::string& name, bool value);
+	void setInt(const std::string& name, int value);
+	void setFloat(const std::string& name, float value);
 	void dealocate();
 
 private:
