@@ -62,8 +62,8 @@ int main() {
 	glGenBuffers(1, &EBO);
 
 	// Vertex and fragment shaders.
-	Shader vertexShader("src/shaders/vertexShader.glsl", GL_VERTEX_SHADER);
-	Shader fragmentShader("src/shaders/fragmentShader.glsl", GL_FRAGMENT_SHADER);
+	Shader vertexShader("src/shaders/vertexShader.vs", GL_VERTEX_SHADER);
+	Shader fragmentShader("src/shaders/fragmentShader.fs", GL_FRAGMENT_SHADER);
 
 	// Shader program.
 	ShaderProgram shaderProgram(vertexShader, fragmentShader);
