@@ -1,4 +1,7 @@
 #include <iostream>
+#include <fstream>
+#include <string>
+
 #include <GLAD/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -41,6 +44,19 @@ int checkErrorsShaderProgramLinking(int shaderProgram) {
 	return 0;
 }
 
+std::string getShaderFileContents(std::string shaderFileName) {
+	std::ifstream ifile(shaderFileName);
+	std::string filetext;
+
+	while (ifile.good()) {
+		std::string line;
+		std::getline(ifile, line);
+		filetext.append(line + "\n");
+	}
+
+	return filetext;
+}
+
 int main() {
 	// Init GLFW.
 	glfwInit();
@@ -70,15 +86,14 @@ int main() {
 	glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
 	float vertices[] = {
-		0.5f, 0.5f, 0.0f, // top right
-		0.5f, -0.5f, 0.0f, // bottom right
-		-0.5f, -0.5f, 0.0f, // bottom left
-		-0.5f, 0.5f, 0.0f // top left
+		// positions       // colors
+		0.5f , -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom right
+		-0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, // bottom left
+		0.0f , 0.5f , 0.0f, 0.0f, 0.0f, 1.0f // top
 	};
 
 	unsigned int indices[] = {
-		0, 1, 3, // first triangle
-		1, 2, 3 // second triangle
+		0, 1, 2
 	};
 
 	// Create VBO and EBO.
@@ -87,19 +102,11 @@ int main() {
 	glGenBuffers(1, &EBO);
 
 	// Vertex shader and fragment shader source.
-	const char* vertexShaderSource = "#version 330 core\n"
-		"layout (location = 0) in vec3 aPos;\n"
+	std::string vertexShaderString = getShaderFileContents("src/shaders/vertexShader.glsl");
+	std::string fragmentShaderString = getShaderFileContents("src/shaders/fragmentShader.glsl");
 
-		"void main() {\n"
-		"gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-		"}\0";
-
-	const char* fragmentShaderSource = "#version 330 core\n"
-		"out vec4 FragColor;\n"
-
-		"void main() {\n"
-		"FragColor = vec4(1.0, 0.5, 0.2, 1.0);\n"
-		"}\0";
+	const char* vertexShaderSource = vertexShaderString.c_str();
+	const char* fragmentShaderSource = fragmentShaderString.c_str();
 	
 	// VERTEX SHADER.
 	unsigned int vertexShader;
@@ -153,8 +160,11 @@ int main() {
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 	// Set attribute pointers and enable them.
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*) 0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*) 0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*) (3 * sizeof(float)));
+
 	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
 
 	// Main loop.
 	while (!glfwWindowShouldClose(window)) {
@@ -164,6 +174,7 @@ int main() {
 		// Clearing.
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
+		glUseProgram(shaderProgram);
 
 		// Drawing.
 		glBindVertexArray(VAO);
